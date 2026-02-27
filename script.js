@@ -54,6 +54,7 @@ function initDataStreams() {
     canvas.height = height;
 
     const textString = "GOOGLE LABYRINTH SEASON 6";
+    const specialText = "COLOR ORANGE";
     const fontSize = 16;
     const columns = Math.ceil(height / (fontSize * 1.5));
     const streams = [];
@@ -65,7 +66,8 @@ function initDataStreams() {
             this.speed = (Math.random() * 2 + 1) * (Math.random() > 0.5 ? 1 : -1);
             this.opacity = Math.random() * 0.3 + 0.05;
             this.highlight = 0;
-            this.chars = textString.split('');
+            this.isOrange = Math.random() > 0.85; // 15% chance to be orange
+            this.chars = (this.isOrange ? specialText : textString).split('');
         }
 
         update(mouse) {
@@ -88,16 +90,19 @@ function initDataStreams() {
             ctx.font = `${fontSize}px "JetBrains Mono", monospace`;
 
             let currentX = this.x;
+            const baseColor = this.isOrange ? '255, 120, 0' : '0, 255, 204';
+            const glowColor = this.isOrange ? '#ff7800' : '#00ffcc';
+
             this.chars.forEach((char, i) => {
                 const finalOpacity = Math.min(1, this.opacity + (this.highlight * 0.6));
                 const isGlow = this.highlight > 0.5 && Math.random() > 0.8;
 
-                ctx.fillStyle = isGlow ? '#fff' : `rgba(0, 255, 204, ${finalOpacity})`;
+                ctx.fillStyle = isGlow ? '#fff' : `rgba(${baseColor}, ${finalOpacity})`;
 
-                // Add a slight glow effect if highlighted
-                if (this.highlight > 0.3) {
-                    ctx.shadowBlur = 10 * this.highlight;
-                    ctx.shadowColor = '#00ffcc';
+                // Add a glow effect if highlighted or if it's an orange stream
+                if (this.highlight > 0.3 || this.isOrange) {
+                    ctx.shadowBlur = (this.isOrange ? 15 : 10) * (this.isOrange ? 1 : this.highlight);
+                    ctx.shadowColor = glowColor;
                 } else {
                     ctx.shadowBlur = 0;
                 }
@@ -105,6 +110,7 @@ function initDataStreams() {
                 ctx.fillText(char, currentX, this.y);
                 currentX += fontSize * 0.7; // Character spacing
             });
+            ctx.shadowBlur = 0;
         }
     }
 
@@ -143,7 +149,92 @@ function initDataStreams() {
 initDataStreams();
 
 
-// --- 3. CORE LOGIC ---
+// --- 3. MAZE GUARDIAN CONTROLLER ---
+
+(function () {
+    const DIALOGUE = {
+        wrong: "Wrong key. The maze rejects you.",
+        correct: "Access Granted. You may proceed..."
+    };
+
+    const wrapper = document.getElementById('guardian-wrapper');
+    const body = document.getElementById('guardian-body');
+    const bubble = document.getElementById('guardian-bubble');
+    const msgEl = document.getElementById('guardian-msg');
+    const mouth = document.getElementById('guardian-mouth');
+    const eyelidL = document.getElementById('eyelid-left');
+    const eyelidR = document.getElementById('eyelid-right');
+
+    let hideTimer = null;
+    let blinkTimer = null;
+    let typeTimer = null;
+
+    function typeMessage(text, onDone) {
+        msgEl.textContent = '';
+        msgEl.classList.remove('typing-done');
+        bubble.classList.remove('bubble-done');
+        clearInterval(typeTimer);
+        let i = 0;
+        typeTimer = setInterval(() => {
+            msgEl.textContent += text[i++];
+            if (i >= text.length) {
+                clearInterval(typeTimer);
+                msgEl.classList.add('typing-done');
+                bubble.classList.remove('bubble-done');
+                void bubble.offsetWidth;
+                bubble.classList.add('bubble-done');
+                if (onDone) onDone();
+            }
+        }, 38);
+    }
+
+    function doBlink() {
+        eyelidL.setAttribute('height', '28');
+        eyelidR.setAttribute('height', '28');
+        setTimeout(() => {
+            eyelidL.setAttribute('height', '0');
+            eyelidR.setAttribute('height', '0');
+        }, 140);
+    }
+
+    function startBlinking() { stopBlinking(); blinkTimer = setInterval(doBlink, 3200); }
+    function stopBlinking() {
+        clearInterval(blinkTimer);
+        eyelidL.setAttribute('height', '0');
+        eyelidR.setAttribute('height', '0');
+    }
+
+    function showGuardian(type) {
+        clearTimeout(hideTimer);
+        clearInterval(typeTimer);
+        body.classList.remove('guardian-wrong', 'guardian-correct');
+        void body.offsetWidth;
+        if (type === 'wrong') {
+            mouth.setAttribute('d', 'M 54 122 Q 70 110 86 122');
+        } else {
+            mouth.setAttribute('d', 'M 54 110 Q 70 128 86 110');
+        }
+        wrapper.classList.add('guardian-visible');
+        startBlinking();
+        setTimeout(() => {
+            body.classList.add(type === 'wrong' ? 'guardian-wrong' : 'guardian-correct');
+        }, 300);
+        typeMessage(DIALOGUE[type]);
+        hideTimer = setTimeout(() => hideGuardian(), 5000);
+    }
+
+    function hideGuardian() {
+        stopBlinking();
+        clearInterval(typeTimer);
+        wrapper.classList.remove('guardian-visible');
+    }
+
+    window.guardianWrong = () => showGuardian('wrong');
+    window.guardianCorrect = () => showGuardian('correct');
+})();
+
+
+// --- 4. CORE LOGIC ---
 
 const passkeyInput = document.getElementById('passkey');
 const unlockBtn = document.getElementById('unlock-btn');
@@ -190,10 +281,10 @@ async function handleUnlock() {
             clueText.textContent = decodedClue;
 
             modal.classList.remove('hidden');
-            // Trigger reflow for transition
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+
+            // Guardian: correct answer reaction
+            guardianCorrect();
 
         } catch (error) {
             console.error('Core Error:', error);
@@ -208,13 +299,13 @@ async function handleUnlock() {
         // Incorrect state handling
         errorMsg.classList.remove('hidden');
 
-        // Remove and Re-add shake class to restart animation on consecutive fails
         passkeyInput.classList.remove('shake');
-        void passkeyInput.offsetWidth; // Force DOM reflow
+        void passkeyInput.offsetWidth;
         passkeyInput.classList.add('shake');
-
-        // Clear input for next attempt
         passkeyInput.value = '';
+
+        // Guardian: wrong answer reaction
+        guardianWrong();
     }
 }
 

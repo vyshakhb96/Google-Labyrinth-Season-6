@@ -44,7 +44,7 @@
         </div>
 
         <!-- Error Message Placeholder -->
-        <p id="error-msg" class="hidden">Authentication failed. The maze rejects you.</p>
+        <p id="error-msg" class="hidden"></p>
     </div>
 
     <!-- Hidden Popup Modal for Clue -->
@@ -71,7 +71,103 @@
         </div>
     </div>
 
+    <!-- =============================================
+         MAZE GUARDIAN CHARACTER
+         Orange-themed blob guardian, bottom-right corner.
+         ============================================= -->
+    <div id="guardian-wrapper" class="guardian-wrapper">
+
+        <!-- Speech Bubble -->
+        <div id="guardian-bubble" class="guardian-bubble">
+            <span id="guardian-msg" class="guardian-msg"></span>
+            <div class="bubble-tail"></div>
+        </div>
+
+        <!-- Guardian Body (pure SVG — Fun Blob Character) -->
+        <div id="guardian-body" class="guardian-body">
+            <svg id="guardian-svg" viewBox="0 0 140 180" xmlns="http://www.w3.org/2000/svg" width="140" height="180">
+                <defs>
+                    <filter id="orange-glow" x="-40%" y="-40%" width="180%" height="180%">
+                        <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+                        <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                    <radialGradient id="body-grad" cx="40%" cy="35%" r="60%">
+                        <stop offset="0%" stop-color="#ffb347" />
+                        <stop offset="100%" stop-color="#cc5500" />
+                    </radialGradient>
+                    <radialGradient id="cheek-grad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#ff6a00" stop-opacity="0.7" />
+                        <stop offset="100%" stop-color="#cc5500" stop-opacity="0" />
+                    </radialGradient>
+                </defs>
+
+                <!-- Antennae -->
+                <line x1="52" y1="38" x2="38" y2="12" stroke="#ff8c00" stroke-width="3.5" stroke-linecap="round"
+                    filter="url(#orange-glow)" />
+                <circle cx="36" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
+                <circle cx="36" cy="9" r="3" fill="#fff" opacity="0.6" />
+                <line x1="88" y1="38" x2="102" y2="12" stroke="#ff8c00" stroke-width="3.5" stroke-linecap="round"
+                    filter="url(#orange-glow)" />
+                <circle cx="104" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
+                <circle cx="104" cy="9" r="3" fill="#fff" opacity="0.6" />
+
+                <!-- Body -->
+                <ellipse cx="70" cy="95" rx="52" ry="55" fill="url(#body-grad)" filter="url(#orange-glow)" />
+                <ellipse cx="55" cy="68" rx="18" ry="12" fill="#fff" opacity="0.12" transform="rotate(-15 55 68)" />
+
+                <!-- Eyes -->
+                <ellipse cx="50" cy="85" rx="13" ry="14" fill="#fff" />
+                <ellipse cx="50" cy="87" rx="8" ry="8" fill="#1a0800" />
+                <ellipse cx="50" cy="87" rx="5" ry="5" fill="#ff8c00" filter="url(#orange-glow)" />
+                <ellipse cx="54" cy="83" rx="3" ry="3" fill="#fff" opacity="0.9" />
+                <rect id="eyelid-left" x="37" y="71" width="26" height="0" rx="6" fill="#cc5500" />
+
+                <ellipse cx="90" cy="85" rx="13" ry="14" fill="#fff" />
+                <ellipse cx="90" cy="87" rx="8" ry="8" fill="#1a0800" />
+                <ellipse cx="90" cy="87" rx="5" ry="5" fill="#ff8c00" filter="url(#orange-glow)" />
+                <ellipse cx="94" cy="83" rx="3" ry="3" fill="#fff" opacity="0.9" />
+                <rect id="eyelid-right" x="77" y="71" width="26" height="0" rx="6" fill="#cc5500" />
+
+                <!-- Cheeks -->
+                <ellipse cx="38" cy="108" rx="12" ry="8" fill="url(#cheek-grad)" />
+                <ellipse cx="102" cy="108" rx="12" ry="8" fill="url(#cheek-grad)" />
+
+                <!-- Mouth -->
+                <path id="guardian-mouth" d="M 54 112 Q 70 122 86 112" stroke="#7a2500" stroke-width="3" fill="none"
+                    stroke-linecap="round" />
+
+                <!-- Nose -->
+                <circle cx="70" cy="105" r="3" fill="#a33d00" opacity="0.6" />
+
+                <!-- Arms -->
+                <ellipse cx="22" cy="100" rx="10" ry="16" fill="#e06010" transform="rotate(20 22 100)"
+                    filter="url(#orange-glow)" />
+                <circle cx="14" cy="112" r="7" fill="#ffb347" filter="url(#orange-glow)" />
+                <ellipse cx="118" cy="100" rx="10" ry="16" fill="#e06010" transform="rotate(-20 118 100)"
+                    filter="url(#orange-glow)" />
+                <circle cx="126" cy="112" r="7" fill="#ffb347" filter="url(#orange-glow)" />
+
+                <!-- Legs & feet -->
+                <ellipse cx="55" cy="147" rx="14" ry="10" fill="#cc5500" filter="url(#orange-glow)" />
+                <ellipse cx="85" cy="147" rx="14" ry="10" fill="#cc5500" filter="url(#orange-glow)" />
+                <ellipse cx="52" cy="154" rx="16" ry="8" fill="#ff8c00" filter="url(#orange-glow)" />
+                <ellipse cx="88" cy="154" rx="16" ry="8" fill="#ff8c00" filter="url(#orange-glow)" />
+
+                <!-- Belly shine dots -->
+                <circle cx="64" cy="100" r="3" fill="#fff" opacity="0.15" />
+                <circle cx="74" cy="110" r="2" fill="#fff" opacity="0.12" />
+                <circle cx="60" cy="112" r="2" fill="#fff" opacity="0.10" />
+            </svg>
+        </div>
+    </div>
+    <!-- End Guardian -->
+    <!-- End Guardian -->
+
     <script src="script.js"></script>
+
 </body>
 
 </html>
