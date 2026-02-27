@@ -1,0 +1,378 @@
+/* Core Theme Elements */
+:root {
+    --primary: #00ffcc;
+    /* Cyan/Teal glow */
+    --primary-dim: rgba(0, 255, 204, 0.2);
+    --dark: #07090f;
+    /* Very dark slate, richer than pure black */
+    --panel-bg: rgba(10, 14, 23, 0.65);
+    --error: #ff3366;
+    /* Vibrant premium red */
+    --error-dim: rgba(255, 51, 102, 0.2);
+    --text-main: #e2e8f0;
+    --text-muted: #64748b;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--dark);
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    /* Anti-inspect/Selection measure */
+}
+
+/* Subtly animated gradient background */
+.bg-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 50%, #0d1627 0%, var(--dark) 100%);
+    z-index: -3;
+    animation: bg-pulse 10s ease-in-out infinite alternate;
+}
+
+@keyframes bg-pulse {
+    0% {
+        background: radial-gradient(circle at 45% 50%, #0d1627 0%, var(--dark) 100%);
+    }
+
+    100% {
+        background: radial-gradient(circle at 55% 50%, #111d33 10%, #05070a 100%);
+    }
+}
+
+/* Subtle Matrix/Hacker Grid */
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(to right, rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: -2;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+/* Background canvas for particles */
+#particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* Center Content Container - Glassmorphism */
+.container {
+    position: relative;
+    text-align: center;
+    z-index: 1;
+    padding: 3.5rem 4rem;
+    border: 1px solid rgba(0, 255, 204, 0.15);
+    border-radius: 24px;
+    background: var(--panel-bg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 360px;
+}
+
+/* Top Icon */
+.lock-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 8px var(--primary-dim));
+    opacity: 0.9;
+}
+
+/* Glitching Title */
+.glitch-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2.8rem;
+    margin: 0;
+    text-transform: uppercase;
+    color: #fff;
+    letter-spacing: 2px;
+    line-height: 1.1;
+    text-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    margin-bottom: 3rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* Input Styles */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+input[type="text"] {
+    padding: 16px 20px;
+    font-size: 1.05rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 255, 204, 0.2);
+    border-radius: 12px;
+    color: var(--primary);
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    text-align: center;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    letter-spacing: 1px;
+}
+
+input[type="text"]:focus {
+    border-color: var(--primary);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 255, 204, 0.15);
+    background: rgba(0, 20, 15, 0.4);
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+    font-size: 0.95rem;
+}
+
+/* Button Styles */
+button {
+    position: relative;
+    padding: 16px 20px;
+    font-size: 0.95rem;
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.btn-text {
+    position: relative;
+    z-index: 2;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 204, 0.25), transparent);
+    transition: left 0.5s ease;
+    z-index: 1;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    background: rgba(0, 255, 204, 0.1);
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+/* Hide helper class */
+.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden;
+}
+
+/* Error UI */
+#error-msg {
+    color: var(--error);
+    margin-top: 1.5rem;
+    margin-bottom: -1rem;
+    /* Space reservation */
+    font-size: 0.85rem;
+    text-shadow: 0 0 10px rgba(255, 51, 102, 0.4);
+    opacity: 1;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    letter-spacing: 0.5px;
+}
+
+.shake {
+    animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+    border-color: var(--error) !important;
+    color: var(--error) !important;
+    box-shadow: 0 0 15px rgba(255, 51, 102, 0.2), inset 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+    background: rgba(255, 51, 102, 0.05) !important;
+}
+
+@keyframes shake {
+
+    10%,
+    90% {
+        transform: translate3d(-3px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(5px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-7px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(7px, 0, 0);
+    }
+}
+
+/* Modal UI */
+.modal {
+    position: absolute;
+    /* Using absolute inside fixed body context avoids scrolling issues */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(3, 5, 8, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.modal.show {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--panel-bg);
+    border: 1px solid rgba(0, 255, 204, 0.3);
+    padding: 3rem 3.5rem;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 255, 204, 0.1);
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 480px;
+    width: 90%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal.show .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.success-icon {
+    width: 64px;
+    height: 64px;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 10px var(--primary-dim));
+}
+
+.access-granted {
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.clue-container {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    margin-bottom: 2.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.clue-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 0;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+}
+
+/* Modal specific button styling overrides */
+.next-btn {
+    background: var(--primary);
+    color: var(--dark);
+    border: none;
+    font-weight: 800;
+}
+
+.next-btn::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+}
+
+.next-btn:hover {
+    background: #00e6b8;
+    box-shadow: 0 0 25px rgba(0, 255, 204, 0.4);
+    color: var(--dark);
+    border: none;
+}
+
+/* Custom Selection */
+::selection {
+    background-color: var(--primary);
+    color: var(--dark);
+}
