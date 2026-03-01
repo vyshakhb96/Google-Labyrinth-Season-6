@@ -3,12 +3,16 @@
 // Disable Right Click
 document.addEventListener('contextmenu', e => e.preventDefault());
 
-// Disable Key Shortcuts (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, etc.)
+// Disable Key Shortcuts (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, and Mac equivalents)
 document.addEventListener('keydown', e => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
     if (
         e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-        (e.ctrlKey && (e.key === 'U' || e.key === 'u'))
+        (cmdOrCtrl && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+        (cmdOrCtrl && (e.key === 'U' || e.key === 'u')) ||
+        (isMac && e.altKey && cmdOrCtrl && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c'))
     ) {
         e.preventDefault();
         return false;
@@ -209,11 +213,9 @@ initDataStreams();
         clearInterval(typeTimer);
         body.classList.remove('guardian-wrong', 'guardian-correct');
         void body.offsetWidth;
-        if (type === 'wrong') {
-            mouth.setAttribute('d', 'M 54 122 Q 70 110 86 122');
-        } else {
-            mouth.setAttribute('d', 'M 54 110 Q 70 128 86 110');
-        }
+        // Neutral initial mouth, will be updated by mousemove
+        mouth.setAttribute('d', 'M 54 112 L 86 112');
+
         wrapper.classList.add('guardian-visible');
         startBlinking();
         setTimeout(() => {
@@ -222,6 +224,70 @@ initDataStreams();
         typeMessage(DIALOGUE[type]);
         hideTimer = setTimeout(() => hideGuardian(), 5000);
     }
+
+    // Intelligent Eye Tracking & Organic Movement
+    let tX = 0, tY = 0, cX = 0, cY = 0;
+
+    const pL = {
+        pupil: document.getElementById('guardian-pupil-l'),
+        iris: document.getElementById('guardian-iris-l'),
+        shine: document.getElementById('guardian-shine-l')
+    };
+    const pR = {
+        pupil: document.getElementById('guardian-pupil-r'),
+        iris: document.getElementById('guardian-iris-r'),
+        shine: document.getElementById('guardian-shine-r')
+    };
+
+    document.addEventListener('mousemove', (e) => {
+        tX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+        tY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+    });
+
+    function updateGuardianEyes() {
+        if (!wrapper.classList.contains('guardian-visible')) {
+            requestAnimationFrame(updateGuardianEyes);
+            return;
+        }
+
+        // Smooth Interpolation (Lerp)
+        cX += (tX - cX) * 0.12;
+        cY += (tY - cY) * 0.12;
+
+        const inZone = tX < -0.2 && tY > 0.25;
+        const pupilRange = inZone ? 9 : 6;
+
+        // Update both eyes with parallax
+        [pL, pR].forEach(eye => {
+            if (!eye.pupil) return;
+
+            const x = cX * pupilRange;
+            const y = cY * pupilRange;
+
+            // Parallax offset (pupil/iris moves more than shine)
+            eye.pupil.setAttribute('transform', `translate(${x}, ${y})`);
+            eye.iris.setAttribute('transform', `translate(${x}, ${y})`);
+            eye.shine.setAttribute('transform', `translate(${x * 0.5}, ${y * 0.5})`);
+
+            // Dilation logic
+            const ir = inZone ? 6 : 5;
+            const pr = inZone ? 9 : 8;
+            eye.iris.setAttribute('rx', ir); eye.iris.setAttribute('ry', ir);
+            eye.pupil.setAttribute('rx', pr); eye.pupil.setAttribute('ry', pr);
+        });
+
+        // Smile & Half-Blink trigger
+        if (inZone) {
+            mouth.setAttribute('d', 'M 54 110 Q 70 128 86 110');
+            eyelidL.setAttribute('height', '14'); // Half-blink
+        } else {
+            mouth.setAttribute('d', 'M 54 112 L 86 112');
+            eyelidL.setAttribute('height', '0');
+        }
+
+        requestAnimationFrame(updateGuardianEyes);
+    }
+    updateGuardianEyes();
 
     function hideGuardian() {
         stopBlinking();
@@ -265,39 +331,18 @@ async function handleUnlock() {
         unlockBtn.disabled = true;
         unlockBtn.querySelector('.btn-text').textContent = 'Decrypting...';
 
-        try {
-            // Fetch dynamically - Clue not stored in plain JS
-            // Adding a small synthesized delay for visual drama
-            await new Promise(r => setTimeout(r, 800));
+        // Show modal directly (Simplified UI)
+        modal.classList.remove('hidden');
+        setTimeout(() => { modal.classList.add('show'); }, 10);
 
-            const response = await fetch('clue.json');
-            if (!response.ok) throw new Error('Clue retrieval failed');
-            const data = await response.json();
+        // Guardian: correct answer reaction
+        guardianCorrect();
 
-            // Decrypt the Base64 clue
-            const decodedClue = atob(data.clue);
-
-            // Inject and show modal
-            clueText.textContent = decodedClue;
-
-            modal.classList.remove('hidden');
-            setTimeout(() => { modal.classList.add('show'); }, 10);
-
-            // Guardian: correct answer reaction
-            guardianCorrect();
-
-        } catch (error) {
-            console.error('Core Error:', error);
-            errorMsg.textContent = 'System error: Unable to retrieve the next sequence.';
-            errorMsg.classList.remove('hidden');
-        } finally {
-            passkeyInput.disabled = false;
-            unlockBtn.disabled = false;
-            unlockBtn.querySelector('.btn-text').textContent = 'Unlock Clue';
-        }
+        unlockBtn.querySelector('.btn-text').textContent = 'Unlock Clue';
     } else {
         // Incorrect state handling
         errorMsg.classList.remove('hidden');
+        errorMsg.textContent = 'ACCESS DENIED: Credentials mismatch.';
 
         passkeyInput.classList.remove('shake');
         void passkeyInput.offsetWidth;
@@ -306,6 +351,10 @@ async function handleUnlock() {
 
         // Guardian: wrong answer reaction
         guardianWrong();
+
+        passkeyInput.disabled = false;
+        unlockBtn.disabled = false;
+        unlockBtn.querySelector('.btn-text').textContent = 'Unlock Clue';
     }
 }
 
@@ -319,5 +368,5 @@ passkeyInput.addEventListener('keypress', function (e) {
 });
 
 nextBtn.addEventListener('click', () => {
-    window.location.href = 'nextclue.html';
+    window.location.href = 'under-maintenance.html';
 });

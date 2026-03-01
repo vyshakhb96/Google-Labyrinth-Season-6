@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Under Maintenance | Google Labyrinth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inconsolata:wght@200;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --secondary: #ff8c00;
+            --dark: #020305;
+            --alert: #ff0055;
+            --line: rgba(0, 255, 204, 0.1);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark);
+            color: #fff;
+            font-family: 'Inconsolata', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- THE DEPTH GRID --- */
+        .grid-3d {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image:
+                linear-gradient(var(--line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--line) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg) translateZ(-200px);
+            opacity: 0.5;
+            z-index: -1;
+            animation: move-grid 20s linear infinite;
+        }
+
+        @keyframes move-grid {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 0 1000px;
+            }
+        }
+
+        /* --- THE CORE STAGE --- */
+        .stage {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        /* Floating HUD Brackets around the Guardian */
+        .hud-bracket {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border: 1px solid var(--primary);
+            opacity: 0.2;
+            animation: rotate-hud 15s linear infinite;
+        }
+
+        .bracket-1 {
+            border-radius: 20%;
+            animation-duration: 10s;
+        }
+
+        .bracket-2 {
+            border-radius: 40%;
+            animation-direction: reverse;
+            animation-duration: 25s;
+        }
+
+        @keyframes rotate-hud {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- THE GUARDIAN (Blob Theme) --- */
+        .guardian-core {
+            position: relative;
+            z-index: 50;
+            width: 140px;
+            height: 180px;
+            animation: core-float 4s ease-in-out infinite, guardian-glow-pulse 2.5s ease-in-out infinite;
+        }
+
+        .guardian-body {
+            transform-origin: bottom center;
+        }
+
+        @keyframes guardian-glow-pulse {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 8px #ff8c0088);
+            }
+
+            50% {
+                filter: drop-shadow(0 0 22px #ff8c00cc);
+            }
+        }
+
+
+
+        /* --- STATUS CONTENT --- */
+        .content {
+            margin-top: 3rem;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .maint-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 6px;
+            margin: 0;
+            color: #fff;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px var(--primary);
+        }
+
+        .status-pill {
+            background: var(--alert);
+            color: #fff;
+            padding: 5px 20px;
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 1rem;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+        }
+
+        /* --- UTILITARIAN DIAGNOSTIC (Requested: less attractive, expandable) --- */
+        .diag-readout {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            font-family: 'Share Tech Mono', monospace;
+            text-align: left;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #333;
+            /* Dull, less attractive border */
+            padding: 10px;
+            z-index: 100;
+            min-width: 280px;
+            color: #666;
+            /* Muted text */
+            font-size: 0.8rem;
+        }
+
+        .diag-readout summary {
+            list-style: none;
+            cursor: pointer;
+            color: #888;
+            outline: none;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #222;
+        }
+
+        .diag-readout summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .err-header {
+            color: #aa0000;
+            /* Muted dark red instead of glowing red */
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .expand-icon {
+            font-size: 0.6rem;
+            color: #444;
+        }
+
+        .log-subpart {
+            margin-top: 10px;
+            padding-left: 10px;
+            border-left: 1px solid #222;
+        }
+
+        .log-row {
+            margin-bottom: 3px;
+        }
+
+        .log-row b {
+            color: #555;
+            font-weight: normal;
+        }
+
+        /* --- ACTION --- */
+        .btn-return {
+            margin-top: 3rem;
+            padding: 12px 40px;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-family: 'Inconsolata', monospace;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-decoration: none;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .btn-return:hover {
+            background: var(--primary);
+            color: var(--dark);
+            box-shadow: 0 0 30px var(--primary);
+            transform: translateY(-5px);
+        }
+
+        /* Side Data Overlays */
+        .side-bar {
+            position: absolute;
+            width: 1px;
+            height: 80vh;
+            background: var(--line);
+        }
+
+        .left-bar {
+            left: 40px;
+        }
+
+        .right-bar {
+            right: 40px;
+        }
+
+        /* --- CLUE HINT EFFECT --- */
+        .clue-hint {
+            margin-top: 2rem;
+            color: #444;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: 0.5s;
+            cursor: default;
+            animation: hint-flicker 5s infinite;
+        }
+
+        .clue-hint:hover {
+            color: var(--primary);
+            text-shadow: 0 0 15px var(--primary);
+            letter-spacing: 4px;
+        }
+
+        @keyframes hint-flicker {
+
+            0%,
+            90%,
+            95%,
+            100% {
+                color: #444;
+                text-shadow: none;
+                opacity: 1;
+            }
+
+            92% {
+                color: var(--primary);
+                text-shadow: 0 0 10px var(--primary);
+                opacity: 0.8;
+            }
+
+            97% {
+                color: var(--alert);
+                text-shadow: 0 0 10px var(--alert);
+                opacity: 0.9;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-3d"></div>
+
+    <!-- UI Decorative Elements -->
+    <div class="side-bar left-bar"></div>
+    <div class="side-bar right-bar"></div>
+
+    <div class="stage" id="main-stage">
+        <!-- Orbiting Brackets -->
+        <div class="hud-bracket bracket-1"></div>
+        <div class="hud-bracket bracket-2"></div>
+
+        <!-- The Original Guardian -->
+        <div class="guardian-core">
+            <svg id="guardian-svg" viewBox="0 0 140 180" xmlns="http://www.w3.org/2000/svg" width="140" height="180">
+                <defs>
+                    <filter id="orange-glow" x="-40%" y="-40%" width="180%" height="180%">
+                        <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+                        <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                    <radialGradient id="body-grad" cx="40%" cy="35%" r="60%">
+                        <stop offset="0%" stop-color="#ffb347" />
+                        <stop offset="100%" stop-color="#cc5500" />
+                    </radialGradient>
+                    <radialGradient id="cheek-grad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#ff6a00" stop-opacity="0.7" />
+                        <stop offset="100%" stop-color="#cc5500" stop-opacity="0" />
+                    </radialGradient>
+                </defs>
+
+                <!-- Antennae -->
+                <line x1="52" y1="38" x2="38" y2="12" stroke="#ff8c00" stroke-width="3.5" stroke-linecap="round"
+                    filter="url(#orange-glow)" />
+                <circle cx="36" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
+                <circle cx="36" cy="9" r="3" fill="#fff" opacity="0.6" />
+                <line x1="88" y1="38" x2="102" y2="12" stroke="#ff8c00" stroke-width="3.5" stroke-linecap="round"
+                    filter="url(#orange-glow)" />
+                <circle cx="104" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
+                <circle cx="104" cy="9" r="3" fill="#fff" opacity="0.6" />
+
+                <!-- Body -->
+                <ellipse cx="70" cy="95" rx="52" ry="55" fill="url(#body-grad)" filter="url(#orange-glow)" />
+                <ellipse cx="55" cy="68" rx="18" ry="12" fill="#fff" opacity="0.12" transform="rotate(-15 55 68)" />
+
+                <!-- Eyes -->
+                <ellipse cx="50" cy="85" rx="13" ry="14" fill="#fff" />
+                <ellipse id="pupil-l" cx="50" cy="87" rx="8" ry="8" fill="#1a0800" />
+                <ellipse id="iris-l" cx="50" cy="87" rx="5" ry="5" fill="#ff8c00" filter="url(#orange-glow)" />
+                <ellipse id="shine-l" cx="54" cy="83" rx="3" ry="3" fill="#fff" opacity="0.9" />
+                <rect id="eyelid-l-core" x="37" y="71" width="26" height="0" rx="6" fill="#cc5500" />
+
+                <ellipse cx="90" cy="85" rx="13" ry="14" fill="#fff" />
+                <ellipse id="pupil-r" cx="90" cy="87" rx="8" ry="8" fill="#1a0800" />
+                <ellipse id="iris-r" cx="90" cy="87" rx="5" ry="5" fill="#ff8c00" filter="url(#orange-glow)" />
+                <ellipse id="shine-r" cx="94" cy="83" rx="3" ry="3" fill="#fff" opacity="0.9" />
+                <rect id="eyelid-r-core" x="77" y="71" width="26" height="0" rx="6" fill="#cc5500" />
+
+                <!-- Cheeks -->
+                <ellipse cx="38" cy="108" rx="12" ry="8" fill="url(#cheek-grad)" />
+                <ellipse cx="102" cy="108" rx="12" ry="8" fill="url(#cheek-grad)" />
+
+                <!-- Mouth & Teeth Area (Two Tiny Front Teeth) -->
+                <g id="teeth-group" style="opacity: 0; transition: opacity 0.2s;">
+                    <!-- Small, tucked-in front teeth -->
+                    <rect x="67" y="112" width="3" height="6" rx="1" fill="#fff" />
+                    <rect x="71" y="112" width="3" height="6" rx="1" fill="#fff" />
+                </g>
+                <path id="mouth-core" d="M 54 112 L 86 112" stroke="#7a2500" stroke-width="3" fill="none"
+                    stroke-linecap="round" />
+
+                <!-- Nose -->
+                <circle cx="70" cy="105" r="3" fill="#a33d00" opacity="0.6" />
+
+                <!-- Arms -->
+                <ellipse cx="22" cy="100" rx="10" ry="16" fill="#e06010" transform="rotate(20 22 100)"
+                    filter="url(#orange-glow)" />
+                <circle cx="14" cy="112" r="7" fill="#ffb347" filter="url(#orange-glow)" />
+                <ellipse cx="118" cy="100" rx="10" ry="16" fill="#e06010" transform="rotate(-20 118 100)"
+                    filter="url(#orange-glow)" />
+                <circle cx="126" cy="112" r="7" fill="#ffb347" filter="url(#orange-glow)" />
+
+                <!-- Legs & feet -->
+                <ellipse cx="55" cy="147" rx="14" ry="10" fill="#cc5500" filter="url(#orange-glow)" />
+                <ellipse cx="85" cy="147" rx="14" ry="10" fill="#cc5500" filter="url(#orange-glow)" />
+                <ellipse cx="52" cy="154" rx="16" ry="8" fill="#ff8c00" filter="url(#orange-glow)" />
+                <ellipse cx="88" cy="154" rx="16" ry="8" fill="#ff8c00" filter="url(#orange-glow)" />
+
+                <!-- Belly shine dots -->
+                <circle cx="64" cy="100" r="3" fill="#fff" opacity="0.15" />
+                <circle cx="74" cy="110" r="2" fill="#fff" opacity="0.12" />
+                <circle cx="60" cy="112" r="2" fill="#fff" opacity="0.10" />
+            </svg>
+        </div>
+
+        <div class="content">
+            <h1 class="maint-title">Under Maintenance</h1>
+
+
+            <p class="clue-hint">
+                Your next clue may be here in the page, just go and find it.
+            </p>
+
+            <a href="index.html" class="btn-return">GO BACK</a>
+        </div>
+    </div>
+
+    <!-- Utilitarian Diagnostic Readout (Requested: less attractive + expandable) -->
+    <details class="diag-readout">
+        <summary>
+            <span class="err-header">ERROR_PATH_NOT_FOUND</span>
+            <span class="expand-icon">[+] CLICK TO EXPAND LOGS</span>
+        </summary>
+        <div class="log-subpart">
+            <div class="log-row">SYS_UUID: <b>0xFA92_LAB_6</b></div>
+            <div class="log-row">LOCATION: <b>GRID_SECTOR_9</b></div>
+            <details id="stack-trace-target">
+                <summary style="font-size: 0.7rem; border: none; padding: 0;">> STACK_TRACE</summary>
+                <div style="font-size: 0.65rem; color: #444; padding-left: 10px;">
+                    - TRACE: entry_point.js:102<br>
+                    - TRACE: node_modules/labyrinth_core.so<br>
+                    - CAUSE: PHASE_2_GATE_VOID
+                </div>
+            </details>
+            <div class="log-row">ACTION: <b>SEEKING_DATA_SHARDS</b></div>
+            <div style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px; color: #444;">
+                CRITICAL_LOG: THE CORE IS CURRENTLY BEING RE-ANCHORED.<br>
+                STABILIZING PHASE GENERATOR...
+            </div>
+        </div>
+    </details>
+
+    <script>
+        // --- ANTI-INSPECT PROTECTION ---
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+            if (e.key === 'F12' || (cmdOrCtrl && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j')) || (cmdOrCtrl && (e.key === 'U' || e.key === 'u')) || (isMac && e.altKey && cmdOrCtrl && (e.key === 'I' || e.key === 'i'))) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        setInterval(() => {
+            const threshold = 160;
+            if ((window.outerWidth - window.innerWidth > threshold) || (window.outerHeight - window.innerHeight > threshold)) {
+                document.body.innerHTML = `<div style="color:#ff003c; flex-direction:column; display:flex; justify-content:center; align-items:center; height:100vh; width:100vw; background:#000; font-family:monospace; z-index:9999; position:fixed; top:0; left:0;"><h1>SECURITY BREACH</h1><p>The maze rejects you.</p></div>`;
+            }
+        }, 1000);
+
+        // Intelligent Eye Tracking & Reaction
+        const pupilL = document.getElementById('pupil-l');
+        const pupilR = document.getElementById('pupil-r');
+        const shineL = document.getElementById('shine-l');
+        const shineR = document.getElementById('shine-r');
+        const browL = document.getElementById('brow-l');
+        const browR = document.getElementById('brow-r');
+        const mouth = document.getElementById('mouth-core');
+        const eyeLidL = document.getElementById('eyelid-l-core');
+        const eyeLidR = document.getElementById('eyelid-r-core');
+        const irisL = document.getElementById('iris-l');
+        const irisR = document.getElementById('iris-r');
+
+
+        let tX = 0, tY = 0, cX = 0, cY = 0;
+        let isTraceOpen = false;
+
+        // Listener for stack trace interaction
+        const traceTag = document.getElementById('stack-trace-target');
+        const teeth = document.getElementById('teeth-group');
+        if (traceTag) {
+            traceTag.addEventListener('toggle', () => {
+                isTraceOpen = traceTag.open;
+                teeth.style.opacity = isTraceOpen ? '1' : '0';
+            });
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            tX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+            tY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+        });
+
+        function updateCharacter() {
+            // Smooth Interpolation for "Organic" feel
+            cX += (tX - cX) * 0.12;
+            cY += (tY - cY) * 0.12;
+
+            const charX = cX * 25;
+            const charY = cY * 25;
+            document.querySelector('.guardian-core').style.transform = `translate(${charX}px, ${charY}px) rotateY(${charX / 4}deg) rotateX(${-charY / 4}deg)`;
+
+            // Reactive state: bottom-left
+            const inZone = tX < -0.2 && tY > 0.2;
+
+            // Intelligent eye shifts (Parallax)
+            const pupilRange = inZone ? 8 : 6;
+            const eyeX = cX * pupilRange;
+            const eyeY = cY * pupilRange;
+
+            // Update both eyes
+            [pupilL, pupilR, irisL, irisR].forEach(el => {
+                el.setAttribute('transform', `translate(${eyeX}, ${eyeY})`);
+            });
+
+            // Reflections move less (Parallax depth)
+            shineL.setAttribute('transform', `translate(${eyeX * 0.4}, ${eyeY * 0.4})`);
+            shineR.setAttribute('transform', `translate(${eyeX * 0.4}, ${eyeY * 0.4})`);
+
+            // Smile & Half-Blink logic
+            if (isTraceOpen) {
+                // Wider smile to comfortably house the tiny teeth
+                mouth.setAttribute('d', 'M 56 112 Q 70 128 84 112');
+                eyeLidL.setAttribute('height', '14'); // Half-closed lid for playful look
+            } else if (inZone) {
+                mouth.setAttribute('d', 'M 54 110 Q 70 128 86 110'); // Regular Smile
+                eyeLidL.setAttribute('height', '12'); // Half-blink/wink
+            } else {
+                mouth.setAttribute('d', 'M 54 112 L 86 112'); // Neutral
+                eyeLidL.setAttribute('height', '0');
+            }
+
+            requestAnimationFrame(updateCharacter);
+        }
+        updateCharacter();
+    </script>
+</body>
+
+</html>
