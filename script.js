@@ -19,29 +19,7 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// Advanced DevTools Detection Loop
-let devToolsTriggered = false;
-setInterval(() => {
-    // Detect via Window Size Difference (if undocked tools open)
-    const threshold = 160;
-    const widthDiff = window.outerWidth - window.innerWidth > threshold;
-    const heightDiff = window.outerHeight - window.innerHeight > threshold;
-
-    // Detect via Debugger Timing
-    const start = performance.now();
-    // Pauses execution if DevTools is open
-    const timeTaken = performance.now() - start;
-
-    if ((widthDiff || heightDiff || timeTaken > 100) && !devToolsTriggered) {
-        devToolsTriggered = true;
-        // Erase DOM and show strictly terminal error
-        document.body.innerHTML = `
-            <div style="color:#ff003c; flex-direction:column; display:flex; justify-content:center; align-items:center; height:100vh; width:100vw; background:#000; font-family:'Courier New', monospace; z-index:9999; position:fixed; top:0; left:0;">
-                <h1 style="text-shadow: 0 0 20px #ff003c;">SECURITY BREACH DETECTED</h1>
-                <p style="font-size: 1.5rem;">Access Terminated. The maze rejects you.</p>
-            </div>`;
-    }
-}, 1000);
+// Advanced DevTools Detection Loop - REMOVED AS REQUESTED
 
 
 function initDataStreams() {

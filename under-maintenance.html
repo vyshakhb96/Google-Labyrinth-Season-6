@@ -214,27 +214,6 @@
             font-weight: normal;
         }
 
-        /* --- ACTION --- */
-        .btn-return {
-            margin-top: 3rem;
-            padding: 12px 40px;
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            font-family: 'Inconsolata', monospace;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            text-decoration: none;
-            transition: 0.3s;
-            display: inline-block;
-        }
-
-        .btn-return:hover {
-            background: var(--primary);
-            color: var(--dark);
-            box-shadow: 0 0 30px var(--primary);
-            transform: translateY(-5px);
-        }
 
         /* Side Data Overlays */
         .side-bar {
@@ -291,6 +270,35 @@
                 color: var(--alert);
                 text-shadow: 0 0 10px var(--alert);
                 opacity: 0.9;
+            }
+        }
+
+        /* Responsive Mobile Layout */
+        @media (max-width: 480px) {
+            .maint-title {
+                font-size: 1.5rem;
+                letter-spacing: 3px;
+            }
+
+            .content {
+                padding: 0 20px;
+            }
+
+
+            .diag-readout {
+                left: 10px;
+                bottom: 10px;
+                min-width: calc(100% - 20px);
+                font-size: 0.7rem;
+            }
+
+            .guardian-core {
+                transform: scale(0.8);
+            }
+
+            .hud-bracket {
+                width: 180px;
+                height: 180px;
             }
         }
     </style>
@@ -401,7 +409,6 @@
                 Your next clue may be here in the page, just go and find it.
             </p>
 
-            <a href="index.html" class="btn-return">GO BACK</a>
         </div>
     </div>
 
@@ -441,12 +448,7 @@
                 return false;
             }
         });
-        setInterval(() => {
-            const threshold = 160;
-            if ((window.outerWidth - window.innerWidth > threshold) || (window.outerHeight - window.innerHeight > threshold)) {
-                document.body.innerHTML = `<div style="color:#ff003c; flex-direction:column; display:flex; justify-content:center; align-items:center; height:100vh; width:100vw; background:#000; font-family:monospace; z-index:9999; position:fixed; top:0; left:0;"><h1>SECURITY BREACH</h1><p>The maze rejects you.</p></div>`;
-            }
-        }, 1000);
+        // DevTools Detection - REMOVED AS REQUESTED
 
         // Intelligent Eye Tracking & Reaction
         const pupilL = document.getElementById('pupil-l');

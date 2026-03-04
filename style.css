@@ -769,3 +769,44 @@ button:active {
     transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.5s ease;
     opacity: 0;
 }
+/* =============================================
+   RESPONSIVE DESIGN (MOBILE)
+   ============================================= */
+@media (max-width: 480px) {
+    .container {
+        width: 85vw !important;
+        padding: 2.5rem 1.5rem !important;
+        border-radius: 20px !important;
+    }
+
+    .glitch-title {
+        font-size: 1.8rem !important;
+    }
+
+    .subtitle {
+        font-size: 0.75rem !important;
+        margin-bottom: 2rem !important;
+        letter-spacing: 1px !important;
+    }
+
+    .input-group {
+        gap: 1rem !important;
+    }
+
+    input[type="text"], button {
+        padding: 14px 18px !important;
+        font-size: 0.9rem !important;
+    }
+
+    .guardian-wrapper.guardian-visible {
+        bottom: 10px !important;
+        right: 10px !important;
+        transform: scale(0.65) !important;
+        transform-origin: bottom right !important;
+    }
+    
+    .guardian-bubble {
+        max-width: 160px !important;
+        font-size: 0.7rem !important;
+    }
+}

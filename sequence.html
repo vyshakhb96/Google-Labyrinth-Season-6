@@ -277,15 +277,33 @@
         /* Mobile Adjustments */
         @media (max-width: 600px) {
             .glass-panel {
+                width: 90vw;
                 padding: 1.5rem;
+                margin: 10px;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+
+            .input-label {
+                font-size: 0.6rem;
+                margin-bottom: 0.5rem;
             }
 
             input {
                 width: 100%;
+                padding: 10px 15px;
+                font-size: 0.9rem;
             }
 
             .unlock-btn {
                 width: 100%;
+                padding: 10px 20px;
+                font-size: 0.85rem;
+                margin-top: 1rem;
+            }
+
+            .video-wrapper {
+                margin-bottom: 1rem;
             }
         }
     </style>
@@ -339,13 +357,7 @@
             }
         });
 
-        // DevTools Detection
-        setInterval(() => {
-            const threshold = 160;
-            if ((window.outerWidth - window.innerWidth > threshold) || (window.outerHeight - window.innerHeight > threshold)) {
-                document.body.innerHTML = `<div style="color:#ff003c; display:flex; justify-content:center; align-items:center; height:100vh; background:#000; font-family:monospace; text-align:center;"><h1>SECURITY BREACH: ACCESS_DENIED</h1></div>`;
-            }
-        }, 1000);
+        // DevTools Detection - REMOVED AS REQUESTED
 
         // Particle Generation
         const container = document.getElementById('particle-container');
