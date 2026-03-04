@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Sequence | Google Labyrinth</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inconsolata:wght@200..700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --secondary: #ff8c00;
+            --dark: #020305;
+            --alert: #ff0055;
+            --line: rgba(0, 255, 204, 0.1);
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #05070a;
+            color: #fff;
+            font-family: 'Inconsolata', monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #0a1018 0%, #05070a 100%);
+        }
+
+        /* --- ADVANCED BACKGROUND --- */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 255, 204, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 204, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+        }
+
+        .glass-panel {
+            width: 95%;
+            max-width: 600px;
+            background: rgba(10, 15, 25, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(0, 255, 204, 0.15);
+            border-radius: 24px;
+            padding: 2.5rem;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(0, 255, 204, 0.03);
+            text-align: center;
+            z-index: 10;
+        }
+
+        /* --- DECORATIVE ELEMENTS --- */
+        .corner {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 2px solid var(--primary);
+            opacity: 0.4;
+        }
+
+        .top-l {
+            top: 20px;
+            left: 20px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .top-r {
+            top: 20px;
+            right: 20px;
+            border-left: 0;
+            border-bottom: 0;
+        }
+
+        .bot-l {
+            bottom: 20px;
+            left: 20px;
+            border-right: 0;
+            border-top: 0;
+        }
+
+        .bot-r {
+            bottom: 20px;
+            right: 20px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        .system-status {
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--primary);
+            letter-spacing: 2px;
+            opacity: 0.5;
+            text-transform: uppercase;
+        }
+
+        /* --- VIDEO CONTAINER --- */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* --- INPUT GROUP --- */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 0.8rem;
+            letter-spacing: 3px;
+        }
+
+        input {
+            background: rgba(0, 255, 204, 0.03);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            padding: 12px 24px;
+            color: #fff;
+            font-family: 'Inconsolata', monospace;
+            font-size: 1rem;
+            width: 320px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px;
+        }
+
+        input:focus {
+            background: rgba(0, 255, 204, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);
+        }
+
+        .unlock-btn {
+            margin-top: 1.5rem;
+            padding: 12px 50px;
+            background: var(--primary);
+            border: none;
+            color: #000;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 3px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            font-weight: 700;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+        }
+
+        .unlock-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(0, 255, 204, 0.5);
+        }
+
+        #error-msg {
+            color: var(--alert);
+            margin-top: 15px;
+            font-size: 0.8rem;
+            height: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* --- INTERACTIVE EFFECTS --- */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            filter: blur(1px);
+            animation: float-particle linear infinite;
+        }
+
+        @keyframes float-particle {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-100vh);
+            }
+        }
+
+
+
+        .video-target {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .target-bracket {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 1px solid rgba(0, 255, 204, 0.3);
+        }
+
+        .tl {
+            top: 10px;
+            left: 10px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .tr {
+            top: 10px;
+            right: 10px;
+            border-left: 0;
+            border-bottom: 0;
+        }
+
+        .bl {
+            bottom: 10px;
+            left: 10px;
+            border-right: 0;
+            border-top: 0;
+        }
+
+        .br {
+            bottom: 10px;
+            right: 10px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .glass-panel {
+                padding: 1.5rem;
+            }
+
+            input {
+                width: 100%;
+            }
+
+            .unlock-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<div class="particles" id="particle-container"></div>
+
+<div class="glass-panel" id="main-panel">
+    <div class="corner top-l"></div>
+    <div class="corner top-r"></div>
+    <div class="corner bot-l"></div>
+    <div class="corner bot-r"></div>
+
+    <div class="video-wrapper">
+        <div class="video-target">
+            <div class="target-bracket tl"></div>
+            <div class="target-bracket tr"></div>
+            <div class="target-bracket bl"></div>
+            <div class="target-bracket br"></div>
+        </div>
+        <div id="player"></div>
+    </div>
+
+    <div id="interaction-zone" class="input-group">
+        <p class="input-label">ENTER_THE_ANSWER</p>
+        <input type="text" id="answer-field" placeholder="Enter the secret key..." autocomplete="off"
+            spellcheck="false">
+        <p id="error-msg"></p>
+        <button class="unlock-btn" id="submit-ans">VERIFY</button>
+    </div>
+</div>
+
+<script>
+    // --- SECURE ANTI-INSPECT PROTECTION ---
+    (function () {
+        // Disable right click
+        document.addEventListener('contextmenu', e => e.preventDefault());
+
+        // Block keyboard shortcuts
+        document.addEventListener('keydown', e => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+
+            if (
+                e.key === 'F12' ||
+                (cmdOrCtrl && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
+                (cmdOrCtrl && e.key === 'u')
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // DevTools Detection
+        setInterval(() => {
+            const threshold = 160;
+            if ((window.outerWidth - window.innerWidth > threshold) || (window.outerHeight - window.innerHeight > threshold)) {
+                document.body.innerHTML = `<div style="color:#ff003c; display:flex; justify-content:center; align-items:center; height:100vh; background:#000; font-family:monospace; text-align:center;"><h1>SECURITY BREACH: ACCESS_DENIED</h1></div>`;
+            }
+        }, 1000);
+
+        // Particle Generation
+        const container = document.getElementById('particle-container');
+        for (let i = 0; i < 50; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            const size = Math.random() * 3 + 1;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.top = Math.random() * 100 + 'vh';
+            p.style.animationDuration = (Math.random() * 10 + 5) + 's';
+            p.style.opacity = Math.random() * 0.4;
+        }
+    })();
+
+    // --- YOUTUBE Iframe API ---
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    var player;
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '100%',
+            width: '100%',
+            videoId: 'bLvqoHBptjg', // Classic "Box of Chocolates" scene
+            playerVars: {
+                'controls': 1, // Let them see the video normally but we track the end
+                'disablekb': 1,
+                'rel': 0,
+                'modestbranding': 1
+            },
+            events: {}
+        });
+    }
+
+    // --- VALIDATION LOGIC ---
+    const submitBtn = document.getElementById('submit-ans');
+    const inputField = document.getElementById('answer-field');
+    const errorMsg = document.getElementById('error-msg');
+
+    async function validate() {
+        const guess = inputField.value.trim().toLowerCase();
+
+        // Hashing utility to hide the answer from inspect
+        const _digest = async (s) => {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        };
+
+        // Encrypted identity target
+        const target = "f056724e18d5bb02661390c08a5a31b3c1a8161cc215455e6c6d26e4749c5f1d";
+        let isMatch = false;
+
+        if (window.crypto && window.crypto.subtle) {
+            const hash = await _digest(guess);
+            isMatch = (hash === target);
+        } else {
+            // Fallback for non-secure contexts: compare against base64 to keep it slightly hidden
+            isMatch = (btoa(guess) === "cm9iZXJ0IHplbWVja2lz");
+        }
+
+        if (isMatch) {
+            window.location.href = 'under-maintenance.html';
+        } else {
+            errorMsg.textContent = "AUTH_FAILED: IDENTITY_NOT_RECOGNIZED.";
+            inputField.value = "";
+            // Visual feedback: shake
+            inputField.style.borderColor = "var(--alert)";
+            setTimeout(() => { inputField.style.borderColor = "var(--primary)"; }, 600);
+        }
+    }
+
+    submitBtn.onclick = validate;
+    inputField.onkeypress = (e) => { if (e.key === 'Enter') validate(); };
+</script>
+</body>
+
+</html>

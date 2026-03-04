@@ -319,7 +319,7 @@ async function handleUnlock() {
     };
 
     // Validate target phrase via SHA-256 Hash
-    const targetHash = "bd855dd753993db08fb353be46ab306d960cda11649af90efdb26a9b4f42cad1";
+    const targetHash = "ec54e99514663edb97adef400fbf34a77daae108303d3da8008a7dfb4cdf0f52";
     const guessHash = await _digest(guess);
 
     if (guessHash === targetHash) {
@@ -368,5 +368,5 @@ passkeyInput.addEventListener('keypress', function (e) {
 });
 
 nextBtn.addEventListener('click', () => {
-    window.location.href = 'under-maintenance.html';
+    window.location.href = 'sequence.html';
 });
