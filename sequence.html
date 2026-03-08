@@ -127,13 +127,15 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
         }
 
-        .video-wrapper iframe {
+        .video-wrapper iframe,
+        .video-wrapper video {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border: 0;
+            object-fit: cover;
         }
 
         /* --- INPUT GROUP --- */
@@ -324,7 +326,10 @@
             <div class="target-bracket bl"></div>
             <div class="target-bracket br"></div>
         </div>
-        <div id="player"></div>
+        <video id="video-player" controls>
+            <source src="assets/videos/forrest_gump.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
     </div>
 
     <div id="interaction-zone" class="input-group">
@@ -374,32 +379,33 @@
         }
     })();
 
-    // --- YOUTUBE Iframe API ---
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    var player;
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            height: '100%',
-            width: '100%',
-            videoId: 'bLvqoHBptjg', // Classic "Box of Chocolates" scene
-            playerVars: {
-                'controls': 1, // Let them see the video normally but we track the end
-                'disablekb': 1,
-                'rel': 0,
-                'modestbranding': 1
-            },
-            events: {}
-        });
-    }
+    // YouTube logic removed for local video streaming
 
     // --- VALIDATION LOGIC ---
     const submitBtn = document.getElementById('submit-ans');
     const inputField = document.getElementById('answer-field');
     const errorMsg = document.getElementById('error-msg');
+
+    function playSuccessSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.08);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.08 + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + i * 0.08);
+                osc.stop(audioCtx.currentTime + i * 0.08 + 0.4);
+            });
+        } catch (e) {
+            console.warn("Audio failure:", e);
+        }
+    }
 
     async function validate() {
         const guess = inputField.value.trim().toLowerCase();
@@ -423,7 +429,10 @@
         }
 
         if (isMatch) {
-            window.location.href = 'under-maintenance.html';
+            playSuccessSound();
+            setTimeout(() => {
+                window.location.href = 'under-maintenance.html';
+            }, 500);
         } else {
             errorMsg.textContent = "AUTH_FAILED: IDENTITY_NOT_RECOGNIZED.";
             inputField.value = "";

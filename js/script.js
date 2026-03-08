@@ -287,6 +287,27 @@ const modal = document.getElementById('modal');
 const clueText = document.getElementById('clue-text');
 const nextBtn = document.getElementById('next-btn');
 
+function playSuccessSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 (Pleasant rising chime)
+        notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.08);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.08 + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime + i * 0.08);
+            osc.stop(audioCtx.currentTime + i * 0.08 + 0.4);
+        });
+    } catch (e) {
+        console.warn("Audio failure:", e);
+    }
+}
+
 async function handleUnlock() {
     const guess = passkeyInput.value.trim().toLowerCase();
 
@@ -297,12 +318,15 @@ async function handleUnlock() {
     };
 
     // Validate target phrase via SHA-256 Hash
-    const targetHash = "ec54e99514663edb97adef400fbf34a77daae108303d3da8008a7dfb4cdf0f52";
+    const targetHash = "d1d92422034a76c8ff4fe8af2a7c7eeafdc858525f55fc62017115705713e8ef";
     const guessHash = await _digest(guess);
 
     if (guessHash === targetHash) {
         errorMsg.classList.add('hidden');
         passkeyInput.classList.remove('shake');
+
+        // Play Success Chime
+        playSuccessSound();
 
         // Disable input while loading
         passkeyInput.disabled = true;

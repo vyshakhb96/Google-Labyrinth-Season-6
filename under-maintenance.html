@@ -327,6 +327,15 @@
                             <feMergeNode in="SourceGraphic" />
                         </feMerge>
                     </filter>
+                    <filter id="green-glow" x="-40%" y="-40%" width="180%" height="180%">
+                        <feGaussianBlur stdDeviation="5" result="greenBlur" />
+                        <feFlood flood-color="#00ffcc" flood-opacity="0.8" result="greenFlood" />
+                        <feComposite in="greenFlood" in2="greenBlur" operator="in" result="glow" />
+                        <feMerge>
+                            <feMergeNode in="glow" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
                     <radialGradient id="body-grad" cx="40%" cy="35%" r="60%">
                         <stop offset="0%" stop-color="#ffb347" />
                         <stop offset="100%" stop-color="#cc5500" />
@@ -337,14 +346,14 @@
                     </radialGradient>
                 </defs>
 
-                <!-- Antennae -->
-                <line x1="52" y1="38" x2="38" y2="12" stroke="#ff8c00" stroke-width="3.5" stroke-linecap="round"
-                    filter="url(#orange-glow)" />
-                <circle cx="36" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
+                <!-- Antennae (Curved Horns) -->
+                <path id="horn-l" d="M 52 38 Q 44 22 38 12" stroke="#ff8c00" stroke-width="3.5" fill="none"
+                    stroke-linecap="round" filter="url(#orange-glow)" />
+                <circle id="horn-tip-l" cx="36" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
                 <circle cx="36" cy="9" r="3" fill="#fff" opacity="0.6" />
-                <line x1="88" y1="38" x2="102" y2="12" stroke="#ff8c00" stroke-width="3.5" stroke-linecap="round"
-                    filter="url(#orange-glow)" />
-                <circle cx="104" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
+                <path id="horn-r" d="M 88 38 Q 96 22 102 12" stroke="#ff8c00" stroke-width="3.5" fill="none"
+                    stroke-linecap="round" filter="url(#orange-glow)" />
+                <circle id="horn-tip-r" cx="104" cy="9" r="6" fill="#ffb347" filter="url(#orange-glow)" />
                 <circle cx="104" cy="9" r="3" fill="#fff" opacity="0.6" />
 
                 <!-- Body -->
@@ -406,7 +415,7 @@
 
 
             <p class="clue-hint">
-                Your next clue may be here in the page, just go and find it.
+                Your path to the next clue may be here in the page, just go and find it.
             </p>
 
         </div>
@@ -424,9 +433,12 @@
             <details id="stack-trace-target">
                 <summary style="font-size: 0.7rem; border: none; padding: 0;">> STACK_TRACE</summary>
                 <div style="font-size: 0.65rem; color: #444; padding-left: 10px;">
-                    - TRACE: entry_point.js:102<br>
-                    - TRACE: node_modules/labyrinth_core.so<br>
-                    - CAUSE: PHASE_2_GATE_VOID
+                    - TRACE1: <span id="trace-1"
+                        style="word-break: break-all;">130941c0e01439bc4a622410a2d5faf06cb22855b60db75c1ef534f9440de5ab</span><br>
+                    - TRACE2: <span id="trace-2"
+                        style="word-break: break-all;">d919e71d51bea09a10ab6d7fa604e1baaa841a3808f9997656bd3f586cbbf7a5</span><br>
+                    - TRACE3: <span id="trace-3"
+                        style="word-break: break-all;">8198415454b19484ddcea29217235f26d99983c02cad2fbfec0cca52c33b5c9f</span>
                 </div>
             </details>
             <div class="log-row">ACTION: <b>SEEKING_DATA_SHARDS</b></div>
@@ -450,7 +462,58 @@
         });
         // DevTools Detection - REMOVED AS REQUESTED
 
+        // --- STEALTH TRACE LOGIC ---
+        // UI shows names normally, but reverts to hashes if DevTools is open (Debugging)
+        (function () {
+            const traceMap = [
+                { id: 'trace-1', raw: atob('Z29vZ2xlLWxhYnlyaW50aC0='), hash: '130941c0e01439bc4a622410a2d5faf06cb22855b60db75c1ef534f9440de5ab' },
+                { id: 'trace-2', raw: atob('cHV6emxlLWdhbWU='), hash: 'd919e71d51bea09a10ab6d7fa604e1baaa841a3808f9997656bd3f586cbbf7a5' },
+                { id: 'trace-3', raw: atob('bmV0bGlmeS5hcHA='), hash: '8198415454b19484ddcea29217235f26d99983c02cad2fbfec0cca52c33b5c9f' }
+            ];
+
+            function checkTraceSecurity() {
+                const threshold = 160;
+                // Detect if DevTools is likely open (window size difference)
+                const isDebugging = (window.outerWidth - window.innerWidth > threshold) || (window.outerHeight - window.innerHeight > threshold);
+
+                traceMap.forEach(item => {
+                    const el = document.getElementById(item.id);
+                    if (el) {
+                        el.textContent = isDebugging ? item.hash : item.raw;
+                    }
+                });
+            }
+
+            setInterval(checkTraceSecurity, 500);
+            checkTraceSecurity();
+        })();
+
         // Intelligent Eye Tracking & Reaction
+        const hornL = document.getElementById('horn-l');
+        const hornTipL = document.getElementById('horn-tip-l');
+        const hornR = document.getElementById('horn-r');
+        const hornTipR = document.getElementById('horn-tip-r');
+        const horns = [hornL, hornTipL, hornR, hornTipR];
+
+        function playTraceSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [880, 1320]; // A5, E6 (High digital blips)
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.05);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime + i * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.05 + 0.1);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + i * 0.05);
+                    osc.stop(audioCtx.currentTime + i * 0.05 + 0.1);
+                });
+            } catch (e) { console.warn(e); }
+        }
+
         const pupilL = document.getElementById('pupil-l');
         const pupilR = document.getElementById('pupil-r');
         const shineL = document.getElementById('shine-l');
@@ -474,6 +537,21 @@
             traceTag.addEventListener('toggle', () => {
                 isTraceOpen = traceTag.open;
                 teeth.style.opacity = isTraceOpen ? '1' : '0';
+
+                if (isTraceOpen) {
+                    playTraceSound();
+                    horns.forEach(h => {
+                        if (h.tagName.toLowerCase() === 'path') h.style.stroke = "#00ffcc";
+                        else h.style.fill = "#00ffcc";
+                        h.style.filter = "url(#green-glow)";
+                    });
+                } else {
+                    horns.forEach(h => {
+                        if (h.tagName.toLowerCase() === 'path') h.style.stroke = "#ff8c00";
+                        else h.style.fill = "#ffb347";
+                        h.style.filter = "url(#orange-glow)";
+                    });
+                }
             });
         }
 
