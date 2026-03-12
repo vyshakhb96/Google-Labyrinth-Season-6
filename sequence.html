@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inconsolata:wght@200..700&display=swap"
         rel="stylesheet">
+
     <style>
         :root {
             --primary: #00ffcc;
@@ -334,117 +335,13 @@
 
     <div id="interaction-zone" class="input-group">
         <p class="input-label">ENTER_THE_ANSWER</p>
-        <input type="text" id="answer-field" placeholder="Enter the secret key..." autocomplete="off"
-            spellcheck="false">
+        <input type="text" id="answer-field" placeholder="Enter GLS6-T1-C2" autocomplete="off" spellcheck="false">
         <p id="error-msg"></p>
         <button class="unlock-btn" id="submit-ans">VERIFY</button>
     </div>
 </div>
 
-<script>
-    // --- SECURE ANTI-INSPECT PROTECTION ---
-    (function () {
-        // Disable right click
-        document.addEventListener('contextmenu', e => e.preventDefault());
-
-        // Block keyboard shortcuts
-        document.addEventListener('keydown', e => {
-            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-            const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
-
-            if (
-                e.key === 'F12' ||
-                (cmdOrCtrl && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J')) ||
-                (cmdOrCtrl && e.key === 'u')
-            ) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // DevTools Detection - REMOVED AS REQUESTED
-
-        // Particle Generation
-        const container = document.getElementById('particle-container');
-        for (let i = 0; i < 50; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            const size = Math.random() * 3 + 1;
-            p.style.width = size + 'px';
-            p.style.height = size + 'px';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.top = Math.random() * 100 + 'vh';
-            p.style.animationDuration = (Math.random() * 10 + 5) + 's';
-            p.style.opacity = Math.random() * 0.4;
-        }
-    })();
-
-    // YouTube logic removed for local video streaming
-
-    // --- VALIDATION LOGIC ---
-    const submitBtn = document.getElementById('submit-ans');
-    const inputField = document.getElementById('answer-field');
-    const errorMsg = document.getElementById('error-msg');
-
-    function playSuccessSound() {
-        try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            notes.forEach((freq, i) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.08);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.08);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.08 + 0.4);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(audioCtx.currentTime + i * 0.08);
-                osc.stop(audioCtx.currentTime + i * 0.08 + 0.4);
-            });
-        } catch (e) {
-            console.warn("Audio failure:", e);
-        }
-    }
-
-    async function validate() {
-        const guess = inputField.value.trim().toLowerCase();
-
-        // Hashing utility to hide the answer from inspect
-        const _digest = async (s) => {
-            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
-            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-        };
-
-        // Encrypted identity target
-        const target = "f056724e18d5bb02661390c08a5a31b3c1a8161cc215455e6c6d26e4749c5f1d";
-        let isMatch = false;
-
-        if (window.crypto && window.crypto.subtle) {
-            const hash = await _digest(guess);
-            isMatch = (hash === target);
-        } else {
-            // Fallback for non-secure contexts: compare against base64 to keep it slightly hidden
-            isMatch = (btoa(guess) === "cm9iZXJ0IHplbWVja2lz");
-        }
-
-        if (isMatch) {
-            playSuccessSound();
-            setTimeout(() => {
-                window.location.href = 'under-maintenance.html';
-            }, 500);
-        } else {
-            errorMsg.textContent = "AUTH_FAILED: IDENTITY_NOT_RECOGNIZED.";
-            inputField.value = "";
-            // Visual feedback: shake
-            inputField.style.borderColor = "var(--alert)";
-            setTimeout(() => { inputField.style.borderColor = "var(--primary)"; }, 600);
-        }
-    }
-
-    submitBtn.onclick = validate;
-    inputField.onkeypress = (e) => { if (e.key === 'Enter') validate(); };
-</script>
+<script src="js/sequence.js"></script>
 </body>
 
 </html>

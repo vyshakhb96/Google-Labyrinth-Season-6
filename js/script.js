@@ -340,6 +340,10 @@ async function handleUnlock() {
         // Guardian: correct answer reaction
         guardianCorrect();
 
+        // --- SESSION LOCK ---
+        // Grant temporary access token for the sequence path
+        sessionStorage.setItem('23010afdebeaf3075495f1bdf4b854a7edc64b974f3dc2731dd3cb675fb691fd', 'AUTHORIZED_BY_GUARDIAN_0xFA92');
+
         unlockBtn.querySelector('.btn-text').textContent = 'Unlock Clue';
     } else {
         // Incorrect state handling
