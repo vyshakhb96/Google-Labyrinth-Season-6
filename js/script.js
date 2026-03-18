@@ -19,6 +19,21 @@ document.addEventListener('keydown', e => {
     }
 });
 
+// --- FORWARD-ONLY ROUTING ---
+const _g = async (p) => {
+    const buf = new TextEncoder().encode(navigator.userAgent.length + p + "LAB_S6_0xFA92");
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+};
+
+(async function() {
+    const vKey = await _g("GATE_VOID");
+    const vVal = await _g("AUTHORIZED");
+    if (sessionStorage.getItem(vKey) === vVal) {
+        window.location.replace('sequence.html');
+    }
+})();
+
 // Advanced DevTools Detection Loop - REMOVED AS REQUESTED
 
 
@@ -283,6 +298,7 @@ initDataStreams();
 const passkeyInput = document.getElementById('passkey');
 const unlockBtn = document.getElementById('unlock-btn');
 const errorMsg = document.getElementById('error-msg');
+
 const modal = document.getElementById('modal');
 const clueText = document.getElementById('clue-text');
 const nextBtn = document.getElementById('next-btn');
@@ -340,9 +356,17 @@ async function handleUnlock() {
         // Guardian: correct answer reaction
         guardianCorrect();
 
-        // --- SESSION LOCK ---
-        // Grant temporary access token for the sequence path
-        sessionStorage.setItem('23010afdebeaf3075495f1bdf4b854a7edc64b974f3dc2731dd3cb675fb691fd', 'AUTHORIZED_BY_GUARDIAN_0xFA92');
+        // --- SECURE SESSION LOCK ---
+        // Generates an environment-linked signature to prevent manual bypass
+        const _g = async (p) => {
+            const buf = new TextEncoder().encode(navigator.userAgent.length + p + "LAB_S6_0xFA92");
+            const hash = await crypto.subtle.digest("SHA-256", buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+        };
+
+        const vKey = await _g("GATE_VOID");
+        const vVal = await _g("AUTHORIZED");
+        sessionStorage.setItem(vKey, vVal);
 
         unlockBtn.querySelector('.btn-text').textContent = 'Unlock Clue';
     } else {
@@ -374,5 +398,5 @@ passkeyInput.addEventListener('keypress', function (e) {
 });
 
 nextBtn.addEventListener('click', () => {
-    window.location.href = 'sequence.html';
+    window.location.replace('sequence.html');
 });

@@ -1,11 +1,17 @@
 // --- SECURE ROUTING PROTECTION ---
 (async function () {
-    const k = sessionStorage.getItem('d263a2b5582affe7b2acc2ae2837bc4fed993e9de9108b6af12313089a5a9bf7'); // Hashed Key
-    if (!k) return window.location.replace('index.html');
-    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(k));
-    const h = Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, "0")).join("");
-    // Validates against hashed token
-    if (h !== "b56fbb8610e963db13336327b3484af951e11361d2f1566f6152ed37bbf65dfc") {
+    // Dynamic Fingerprint Verification
+    const _g = async (p) => {
+        const buf = new TextEncoder().encode(navigator.userAgent.length + p + "LAB_S6_0xFA92");
+        const hash = await crypto.subtle.digest("SHA-256", buf);
+        return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+    };
+
+    const vKey = await _g("CORE_MAINTENANCE");
+    const vVal = await _g("STABILIZED");
+
+    if (sessionStorage.getItem(vKey) !== vVal) {
+        window.stop();
         window.location.replace('index.html');
     }
 })();

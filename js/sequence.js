@@ -1,12 +1,24 @@
+// Dynamic Fingerprint Verification Utility
+const _g = async (p) => {
+    const buf = new TextEncoder().encode(navigator.userAgent.length + p + "LAB_S6_0xFA92");
+    const hash = await crypto.subtle.digest("SHA-256", buf);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+};
+
 // --- SECURE ROUTING PROTECTION ---
 (async function() {
-    const k = sessionStorage.getItem('23010afdebeaf3075495f1bdf4b854a7edc64b974f3dc2731dd3cb675fb691fd'); // Hashed Key
-    if (!k) return window.location.replace('index.html');
-    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(k));
-    const h = Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, "0")).join("");
-    // Validates against hashed token
-    if (h !== "fa5a060a7f6d8e49a2eb6ce40766eb8070e516bd31b8c58729bd14c8b00c5a9c") {
+    const vKey = await _g("GATE_VOID");
+    const vVal = await _g("AUTHORIZED");
+    
+    if (sessionStorage.getItem(vKey) !== vVal) {
+        window.stop();
         window.location.replace('index.html');
+    }
+
+    const vKey2 = await _g("CORE_MAINTENANCE");
+    const vVal2 = await _g("STABILIZED");
+    if (sessionStorage.getItem(vKey2) === vVal2) {
+        window.location.replace('under-maintenance.html');
     }
 })();
 
@@ -49,10 +61,37 @@
 
 // YouTube logic removed for local video streaming
 
-// --- VALIDATION LOGIC ---
+// --- VIDEO SEQUENCE LOGIC ---
+const videoPlayer = document.getElementById('video-player');
+const nextBtn = document.getElementById('next-video-btn');
+const answerSection = document.getElementById('answer-section');
 const submitBtn = document.getElementById('submit-ans');
 const inputField = document.getElementById('answer-field');
 const errorMsg = document.getElementById('error-msg');
+
+
+let currentVideo = 1;
+
+// Handle video sequence
+videoPlayer.onended = () => {
+    if (currentVideo === 1) {
+        nextBtn.style.display = 'block';
+    } else {
+        answerSection.style.display = 'flex';
+    }
+};
+
+// Next Video Button Click Handler
+if (nextBtn) {
+    nextBtn.onclick = () => {
+        nextBtn.style.display = 'none';
+        videoPlayer.src = "assets/videos/charlie.mp4";
+        videoPlayer.load();
+        videoPlayer.play();
+        currentVideo = 2;
+    };
+}
+
 
 function playSuccessSound() {
     try {
@@ -96,8 +135,8 @@ async function validate() {
         }
     };
 
-    const target = "f056724e18d5bb02661390c08a5a31b3c1a8161cc215455e6c6d26e4749c5f1d";
-    const localTarget = "3887c2fe6f3f044"; // Local context signature (obscured)
+    const target = "10d282b3fea5a5a8da396741cb5396364616601f724b634d773439d9549eca8b";
+    const localTarget = "13c4afdadc292ed"; // Local context signature (obscured)
 
     const hash = await sha256(guess);
     const isMatch = (hash === target || hash === localTarget);
@@ -105,10 +144,12 @@ async function validate() {
     if (isMatch) {
         playSuccessSound();
         // --- GRANT PHASE 2 ACCESS ---
-        sessionStorage.setItem('d263a2b5582affe7b2acc2ae2837bc4fed993e9de9108b6af12313089a5a9bf7', 'STABILIZED_VOICE_RECOGNITION_0xCORE');
+        const vKey2 = await _g("CORE_MAINTENANCE");
+        const vVal2 = await _g("STABILIZED");
+        sessionStorage.setItem(vKey2, vVal2);
 
         setTimeout(() => {
-            window.location.href = 'under-maintenance.html';
+            window.location.replace('under-maintenance.html');
         }, 500);
     } else {
         errorMsg.textContent = "AUTH_FAILED: IDENTITY_NOT_RECOGNIZED.";
