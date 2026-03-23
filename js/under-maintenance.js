@@ -97,6 +97,7 @@ const irisR = document.getElementById('iris-r');
 
 let tX = 0, tY = 0, cX = 0, cY = 0;
 let isTraceOpen = false;
+let isForced = false;
 
 // Listener for stack trace interaction
 const traceTag = document.getElementById('stack-trace-target');
@@ -124,18 +125,29 @@ if (traceTag) {
 }
 
 document.addEventListener('mousemove', (e) => {
+    if (isForced) return;
     tX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
     tY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
 });
+
+// Click Interaction: Focus on bottom-left
+const guardian = document.querySelector('.guardian-core');
+if (guardian) {
+    guardian.style.cursor = 'pointer';
+    guardian.addEventListener('click', () => {
+        isForced = true;
+        tX = -1; // Far left
+        tY = 1;  // Far bottom
+        setTimeout(() => {
+            isForced = false;
+        }, 1500);
+    });
+}
 
 function updateCharacter() {
     // Smooth Interpolation for "Organic" feel
     cX += (tX - cX) * 0.12;
     cY += (tY - cY) * 0.12;
-
-    const charX = cX * 25;
-    const charY = cY * 25;
-    document.querySelector('.guardian-core').style.transform = `translate(${charX}px, ${charY}px) rotateY(${charX / 4}deg) rotateX(${-charY / 4}deg)`;
 
     // Reactive state: bottom-left
     const inZone = tX < -0.2 && tY > 0.2;
